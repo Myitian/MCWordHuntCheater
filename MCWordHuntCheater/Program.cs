@@ -111,46 +111,101 @@ namespace Myitian.MCWordHuntCheater
                 Console.WriteLine("# Done!");
                 Console.WriteLine();
                 Console.WriteLine("===== Guide =====");
+
                 Console.WriteLine("*** Input - Correct");
                 Console.WriteLine("[a-zA-Z] = the letter is at the correct spot");
+                Console.WriteLine("\\+\\d+ = add offset");
+                Console.WriteLine("\\-\\d+ = remove offset");
+                Console.WriteLine("=\\d+ = set offset");
                 Console.WriteLine("*** Input - Incorrect");
                 Console.WriteLine("[a-zA-Z] = the letter is at the incorrect spot");
                 Console.WriteLine("*** Input - Exclude");
                 Console.WriteLine("[a-zA-Z] = the letter is not in the word");
+
                 Console.WriteLine("*** Example:");
                 Console.WriteLine("Correct  >>>" + EXAMPLE_CORRECT);
                 string guess_correct = EXAMPLE_CORRECT.ToLower().PadRight(WORD_LEN).Substring(0, WORD_LEN);
                 Console.WriteLine("Incorrect>>>" + EXAMPLE_INCORRECT);
                 string guess_incorrect = EXAMPLE_INCORRECT.ToLower().PadRight(WORD_LEN).Substring(0, WORD_LEN);
                 Console.WriteLine("Exclude  >>>" + EXAMPLE_EXCLUDE);
-                string guess_exclude = EXAMPLE_EXCLUDE.ToLower().PadRight(WORD_LEN).Substring(0, WORD_LEN);
+                string guess_exclude = EXAMPLE_EXCLUDE.ToLower();
                 IEnumerable<string> possibleresult = words.Where(x => IsWordMatch(x, guess_correct, guess_incorrect, guess_exclude));
                 string[] taked = possibleresult.Take(TAKE_COUNT).ToArray();
                 Console.WriteLine($"{taked.Length} of {possibleresult.Count()} possible results:");
                 Console.WriteLine(string.Join("\r\n", taked));
+
                 Console.WriteLine("===== ----- =====");
+
+                possibleresult = null;
+
+                int offset = 0;
+                int readint = 0;
                 while (true)
                 {
                     Console.WriteLine();
-                    Console.WriteLine("Enter word");
+                    Console.WriteLine("Enter word:");
                     Console.Write("Correct  >>>");
-                    guess_correct = Console.ReadLine().ToLower().PadRight(WORD_LEN).Substring(0, WORD_LEN);
-                    Console.Write("Incorrect>>>");
-                    guess_incorrect = Console.ReadLine().ToLower().PadRight(WORD_LEN).Substring(0, WORD_LEN);
-                    Console.Write("Exclude  >>>");
-                    guess_exclude = Console.ReadLine().ToLower().PadRight(WORD_LEN).Substring(0, WORD_LEN);
-
-                    possibleresult = words.Where(x => IsWordMatch(x, guess_correct, guess_incorrect, guess_exclude));
-                    taked = possibleresult.Take(TAKE_COUNT).ToArray();
-                    Console.WriteLine($"{taked.Length} of {possibleresult.Count()} possible results:");
-                    Console.WriteLine(string.Join("\r\n", taked));
+                    string readline = Console.ReadLine().ToLower().PadRight(WORD_LEN);
+                    switch (readline[0])
+                    {
+                        case '+':
+                        case '-':
+                            if (possibleresult is null)
+                            {
+                                Console.WriteLine("# Results are not generated.");
+                                continue;
+                            }
+                            else if (!int.TryParse(readline, out readint) || offset + readint < 0 || offset + readint > possibleresult.Count())
+                            {
+                                Console.WriteLine("# Not a valid offset number.");
+                            }
+                            else
+                            {
+                                offset += readint;
+                            }
+                            break;
+                        case '=':
+                            if (possibleresult is null)
+                            {
+                                Console.WriteLine("# Results are not generated.");
+                                continue;
+                            }
+                            else if (!int.TryParse(readline.Substring(1), out readint) || readint < 0 || readint > possibleresult.Count())
+                            {
+                                Console.WriteLine("# Not a valid offset number.");
+                            }
+                            else
+                            {
+                                offset = readint;
+                            }
+                            break;
+                        default:
+                            guess_correct = readline.Substring(0, WORD_LEN);
+                            Console.Write("Incorrect>>>");
+                            guess_incorrect = Console.ReadLine().ToLower().PadRight(WORD_LEN).Substring(0, WORD_LEN);
+                            Console.Write("Exclude  >>>");
+                            guess_exclude = Console.ReadLine().ToLower();
+                            possibleresult = words.Where(x => IsWordMatch(x, guess_correct, guess_incorrect, guess_exclude));
+                            offset = 0;
+                            break;
+                    }
+                    taked = possibleresult.Skip(offset).Take(TAKE_COUNT).ToArray();
+                    if(taked.Length > 0)
+                    {
+                        Console.WriteLine($"[{offset},{offset + taked.Length - 1}] of {possibleresult.Count()} possible results:");
+                        Console.WriteLine(string.Join("\r\n", taked));
+                    }
+                    else
+                    {
+                        Console.WriteLine("0 possible results.");
+                    }
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 Console.WriteLine();
-                Console.WriteLine("Press any key to continue ...");
+                Console.WriteLine("# Press any key to continue ...");
                 Console.ReadKey();
             }
         }
