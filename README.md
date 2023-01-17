@@ -2,7 +2,7 @@
 
 Search words for Minecraft map Word Hunt.
 
-[Word list source](https://github.com/dwyl/english-words)
+Word list source: datapack in Minecraft map Word Hunt
 
 ## Code Compatibility
 
